@@ -23,6 +23,13 @@ misc.xml
 deploymentTargetDropDown.xml
 render.experimental.xml
 
+.idea/*
+!.idea/codeStyles
+!.idea/codeStyles/*
+!.idea/runConfigurations
+!.idea/runConfigurations/*
+
+
 # Keystore files
 *.jks
 *.keystore
@@ -32,3 +39,15 @@ google-services.json
 
 # Android Profiling
 *.hprof
+
+/build
+/**/build/
+# ===== NDK =====
+.externalNativeBuild
+.cxx/
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
+
+
