@@ -1,6 +1,7 @@
 # Gradle files
 .gradle/
 build/
+gradle
 
 # Local configuration file (sdk path, etc)
 local.properties
@@ -50,4 +51,5 @@ google-services.json
 .DS_Store
 Thumbs.db
 
+*secret
 
