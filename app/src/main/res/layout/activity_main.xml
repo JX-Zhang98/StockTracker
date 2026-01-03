@@ -19,6 +19,19 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
+    <Button
+        android:id="@+id/btnOpenNotifyPermission"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="开启通知权限" />
+
+    <Button
+        android:id="@+id/btnTestDailyApi"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="测试行情接口" />
+
+
     <TextView
         android:id="@+id/textStatus"
         android:text="等待输入"
