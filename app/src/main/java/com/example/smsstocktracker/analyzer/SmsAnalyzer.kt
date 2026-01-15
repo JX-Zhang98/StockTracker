@@ -1,4 +1,4 @@
-package com.example.smsstocktracker
+package com.example.smsstocktracker.analyzer
 
 
 object SmsAnalyzer {
