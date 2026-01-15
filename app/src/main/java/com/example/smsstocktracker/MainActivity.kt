@@ -10,6 +10,12 @@ import android.content.Intent
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 
+import com.example.smsstocktracker.ui.InputFragment
+import com.example.smsstocktracker.ui.RecordsFragment
+import com.example.smsstocktracker.ui.StatsFragment
+
+import com.google.android.material.bottomnavigation.BottomNavigationView
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -19,113 +25,108 @@ class MainActivity : AppCompatActivity() {
 
         Log.d("SmsStock", "=== APP STARTED ===")
 
-        val editSms = findViewById<EditText>(R.id.editSms)
-        val btnAnalyze = findViewById<Button>(R.id.btnAnalyze)
-        val textStatus = findViewById<TextView>(R.id.textStatus)
-        val btnOpenNotifyPermission = findViewById<Button>( R.id.btnOpenNotifyPermission)
-        val btnTestDailyApi = findViewById<Button>(R.id.btnTestDailyApi)
+        val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNav)
 
-        btnTestDailyApi.setOnClickListener {
-            lifecycleScope.launch {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragmentContainer, InputFragment())
+            .commit()
 
-                try {
-                    textStatus.text = "请求中..."
-
-                    val price = ApiClient.stockApi.getDailyPrice(
-                        code = "600519",
-                        date = "2024-01-05"
-                    )
-                    Log.d("DailyApiTest", "返回结果: $price")
-
-                    textStatus.text =
-                        "${price.stockCode} ${price.tradeDate}\n" +
-                                "开:${price.open} 收:${price.close}"
-
-                } catch (e: Exception) {
-
-                    Log.e("DailyApiTest", "请求失败", e)
-                    textStatus.text = "失败：${e.javaClass.simpleName}"
-                }
+        bottomNav.setOnItemSelectedListener { item ->
+            val fragment = when (item.itemId) {
+                R.id.nav_input -> InputFragment()
+                R.id.nav_records -> RecordsFragment()
+                R.id.nav_stats -> StatsFragment()
+                else -> null
             }
+
+            fragment?.let {
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.fragmentContainer, it)
+                    .commit()
+                true
+            } ?: false
         }
 
 
-        // 仅执行一次，获取权限后就不需要再执行
-        btnOpenNotifyPermission.setOnClickListener {
-            startActivity(
-                Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")
-            )
-        }
 
-        btnAnalyze.setOnClickListener {
-            val text = editSms.text.toString()
-            if (text.isBlank()) {
-                textStatus.text = "请输入短信内容"
-                return@setOnClickListener
-            }
-
-            val sb = StringBuilder()
-
-            // Check promotion
-            if (SmsAnalyzer.isPromotionSms(text)) {
-                sb.append("⚠️ 疑似推广短信\n")
-            } else {
-                sb.append("✅ 看起来像正常短信\n")
-            }
-
-            // Extract Source
-            val source = SmsAnalyzer.extractSource(text)
-            val stocks = SmsAnalyzer.extractStockCodes(text)
+//        btnTestDailyApi.setOnClickListener {
+//            lifecycleScope.launch {
+//
+//                try {
+//                    textStatus.text = "请求中..."
+//
+//                    val price = ApiClient.stockApi.getDailyPrice(
+//                        code = "600519",
+//                        date = "2024-01-05"
+//                    )
+//                    Log.d("DailyApiTest", "返回结果: $price")
+//
+//                    textStatus.text =
+//                        "${price.stockCode} ${price.tradeDate}\n" +
+//                                "开:${price.open} 收:${price.close}"
+//
+//                } catch (e: Exception) {
+//
+//                    Log.e("DailyApiTest", "请求失败", e)
+//                    textStatus.text = "失败：${e.javaClass.simpleName}"
+//                }
+//            }
+//        }
 
 
-            if (source != null) {
-                sb.append("来源: $source\n")
-            } else {
-                sb.append("来源: 未知\n")
-            }
+//        // 仅执行一次，获取权限后就不需要再执行
+//        btnOpenNotifyPermission.setOnClickListener {
+//            startActivity(
+//                Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")
+//            )
+//        }
 
-            // Extract Stock Codes
-            val codes = SmsAnalyzer.extractStockCodes(text)
-            if (codes.isNotEmpty()) {
-                sb.append("提及股票: ${codes.joinToString(", ")}\n")
-            } else {
-                sb.append("未发现股票代码\n")
-            }
+//        btnAnalyze.setOnClickListener {
+//
+//            val text = editSms.text.toString().trim()
+//
+//            if (text.isEmpty()) {
+//                textStatus.text = "状态：请输入推荐信息"
+//                return@setOnClickListener
+//            }
+//
+//            // 是否推广短信
+//            if (!SmsAnalyzer.isPromotionSms(text)) {
+//                textResult.text = "未识别为推广信息"
+//                textStatus.text = "状态：分析完成"
+//                return@setOnClickListener
+//            }
+//
+//            val source = SmsAnalyzer.extractSource(text) ?: "未知来源"
+//            val stocks = SmsAnalyzer.extractStockCodes(text)
+//
+//            if (stocks.isEmpty()) {
+//                textResult.text = "已识别来源：$source\n但未识别到股票代码"
+//                textStatus.text = "状态：分析完成"
+//                return@setOnClickListener
+//            }
+//
+//            // 显示分析结果（前端可见）
+//            textResult.text = """
+//        来源：$source
+//        股票代码：${stocks.joinToString(", ")}
+//    """.trimIndent()
+//
+//            // 保存历史推荐（功能 2）
+//            stocks.forEach { code ->
+//                RecommendRepository.add(
+//                    RecommendRecord(
+//                        source = source,
+//                        stockCode = code,
+//                        recommendTime = System.currentTimeMillis(),
+//                        rawText = text,
+//                        inputType = InputType.MANUAL
+//                    )
+//                )
+//            }
+//
+//            textStatus.text = "状态：已保存 ${stocks.size} 条推荐"
+//        }
 
-            textStatus.text = sb.toString()
-
-            if (stocks.isEmpty()) {
-                textStatus.text = "未识别到股票代码"
-                return@setOnClickListener
-            }
-
-            stocks.forEach { code ->
-                val record = RecommendRecord(
-                    source = source,
-                    stockCode = code,
-                    recommendTime = System.currentTimeMillis(),
-                    rawText = text,
-                    inputType = InputType.MANUAL
-                )
-                RecommendRepository.add(record)
-            }
-            textStatus.text = "已保存 ${stocks.size} 条推荐"
-
-            lifecycleScope.launch {
-                try {
-                    val price = ApiClient.stockApi.getDailyPrice(
-                        code = "600519",
-                        date = "2024-01-05"
-                    )
-
-                    Log.d("SmsStock", "价格返回: $price")
-                    textStatus.text = "获取价格成功"
-
-                } catch (e: Exception) {
-                    Log.e("SmsStock", "请求失败", e)
-                    textStatus.text = "获取价格失败"
-                }
-            }
-        }
     }
 }
